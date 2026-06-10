@@ -1,4 +1,4 @@
-# Claude Code GLM Anthropic Shim
+# CC-GLM Dynamic Workflow Shim
 
 Local compatibility shim for using GLM Coding Plan models, especially
 `glm-5.1`, behind Claude Code's Anthropic Messages API surface.
