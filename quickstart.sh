@@ -3,7 +3,7 @@ set -euo pipefail
 
 cd "$(dirname "$0")"
 
-echo "== Claude Code GLM Anthropic Shim quickstart =="
+echo "== CC GLM Dynamic Shim quickstart =="
 
 if ! command -v node >/dev/null 2>&1; then
   echo "ERROR: Node.js >= 18 is required. Install Node.js first." >&2

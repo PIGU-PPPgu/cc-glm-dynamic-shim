@@ -1,5 +1,10 @@
 # CC-GLM Dynamic Workflow Shim
 
+[中文说明](README.zh-CN.md) | English
+
+Unofficial compatibility shim. This project is not affiliated with, endorsed
+by, or sponsored by Anthropic, Claude Code, Z.ai, or BigModel.
+
 Local compatibility shim for using GLM Coding Plan models, especially
 `glm-5.1`, behind Claude Code's Anthropic Messages API surface.
 
@@ -32,7 +37,7 @@ Then forwards them to BigModel's OpenAI-compatible chat completions endpoint:
 ## Run
 
 ```bash
-cd claude-code-glm-anthropic-shim
+cd cc-glm-dynamic-shim
 GLM_MODEL=glm-5.1 GLM_SHIM_THINKING=enabled PORT=8787 npm start
 ```
 
@@ -41,8 +46,8 @@ GLM_MODEL=glm-5.1 GLM_SHIM_THINKING=enabled PORT=8787 npm start
 For a local macOS user, the fastest path is:
 
 ```bash
-git clone https://github.com/PIGU-PPPgu/claude-code-glm-anthropic-shim.git
-cd claude-code-glm-anthropic-shim
+git clone https://github.com/PIGU-PPPgu/cc-glm-dynamic-shim.git
+cd cc-glm-dynamic-shim
 ./quickstart.sh
 ```
 
@@ -58,7 +63,7 @@ Claude Code sends in the request.
 Install the macOS user LaunchAgent:
 
 ```bash
-cd claude-code-glm-anthropic-shim
+cd cc-glm-dynamic-shim
 ./install-launchagent.sh
 ```
 

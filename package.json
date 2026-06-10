@@ -1,5 +1,5 @@
 {
-  "name": "claude-code-glm-anthropic-shim",
+  "name": "cc-glm-dynamic-shim",
   "version": "0.1.0",
   "private": true,
   "type": "module",
