@@ -36,6 +36,23 @@ cd claude-code-glm-anthropic-shim
 GLM_MODEL=glm-5.1 GLM_SHIM_THINKING=enabled PORT=8787 npm start
 ```
 
+## Fastest Setup
+
+For a local macOS user, the fastest path is:
+
+```bash
+git clone https://github.com/PIGU-PPPgu/claude-code-glm-anthropic-shim.git
+cd claude-code-glm-anthropic-shim
+./quickstart.sh
+```
+
+This checks Node.js, runs tests, installs the LaunchAgent, starts the shim, and
+prints the Claude Code / ccswitch settings you need.
+
+You still need to provide your own BigModel Coding Plan API key in Claude Code
+or ccswitch. The shim does not store or need your API key; it forwards the key
+Claude Code sends in the request.
+
 ## Run Automatically
 
 Install the macOS user LaunchAgent:
@@ -74,6 +91,9 @@ Keep the same BigModel API key in `ANTHROPIC_AUTH_TOKEN`.
 ## Suggested ccswitch env
 
 See [examples/ccswitch-config.json](examples/ccswitch-config.json).
+
+For plain Claude Code settings without ccswitch, see
+[examples/claude-settings.json](examples/claude-settings.json).
 
 ```json
 {
@@ -124,4 +144,16 @@ plain `glm-5.1` worked.
 
 ```bash
 npm test
+```
+
+Verify Claude Code can reach the shim:
+
+```bash
+./verify-claude-code.sh
+```
+
+Or with an explicit settings file:
+
+```bash
+./verify-claude-code.sh examples/claude-settings.json
 ```

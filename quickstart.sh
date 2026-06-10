@@ -1,0 +1,52 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+cd "$(dirname "$0")"
+
+echo "== Claude Code GLM Anthropic Shim quickstart =="
+
+if ! command -v node >/dev/null 2>&1; then
+  echo "ERROR: Node.js >= 18 is required. Install Node.js first." >&2
+  exit 1
+fi
+
+node_major="$(node -p 'Number(process.versions.node.split(".")[0])')"
+if [ "$node_major" -lt 18 ]; then
+  echo "ERROR: Node.js >= 18 is required. Current: $(node --version)" >&2
+  exit 1
+fi
+
+echo "Node: $(node --version)"
+echo
+echo "Running tests..."
+npm test
+
+echo
+echo "Installing macOS LaunchAgent..."
+./install-launchagent.sh
+
+echo
+echo "Checking shim health..."
+./status.sh
+
+cat <<'EOF'
+
+Next step: configure Claude Code or ccswitch.
+
+Use these values:
+
+ANTHROPIC_BASE_URL=http://127.0.0.1:8787/anthropic
+ANTHROPIC_AUTH_TOKEN=<your BigModel Coding Plan API key>
+ANTHROPIC_MODEL=glm-5.1
+ANTHROPIC_DEFAULT_OPUS_MODEL=glm-5.1
+ANTHROPIC_DEFAULT_SONNET_MODEL=glm-5.1
+ANTHROPIC_DEFAULT_HAIKU_MODEL=glm-5.1
+CLAUDE_CODE_SUBAGENT_MODEL=glm-5.1
+CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1
+
+Then restart Claude Code and run:
+
+/effort ultracode
+ultracode: start the smallest possible real dynamic workflow. One workflow, one tiny agent, no file edits. Final answer exactly OK.
+/workflows
+EOF
