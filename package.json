@@ -1,0 +1,16 @@
+{
+  "name": "claude-code-glm-anthropic-shim",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node server.mjs",
+    "install:launchagent": "./install-launchagent.sh",
+    "uninstall:launchagent": "./uninstall-launchagent.sh",
+    "status": "./status.sh",
+    "test": "node test.mjs"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
