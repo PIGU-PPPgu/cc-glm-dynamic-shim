@@ -26,8 +26,13 @@ cat > "$dst" <<PLIST
   <key>WorkingDirectory</key>
   <string>${root}</string>
 
+  <key>ProcessType</key>
+  <string>Background</string>
+
   <key>EnvironmentVariables</key>
   <dict>
+    <key>PATH</key>
+    <string>/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin</string>
     <key>PORT</key>
     <string>8787</string>
     <key>GLM_MODEL</key>
@@ -44,6 +49,9 @@ cat > "$dst" <<PLIST
   <key>KeepAlive</key>
   <true/>
 
+  <key>ThrottleInterval</key>
+  <integer>5</integer>
+
   <key>StandardOutPath</key>
   <string>${logs}/stdout.log</string>
 
@@ -55,9 +63,18 @@ PLIST
 
 if launchctl print "gui/$(id -u)/$label" >/dev/null 2>&1; then
   launchctl bootout "gui/$(id -u)/$label" >/dev/null 2>&1 || true
+  for _ in 1 2 3 4 5; do
+    if ! launchctl print "gui/$(id -u)/$label" >/dev/null 2>&1; then
+      break
+    fi
+    sleep 0.2
+  done
 fi
 
-launchctl bootstrap "gui/$(id -u)" "$dst"
+if ! launchctl bootstrap "gui/$(id -u)" "$dst"; then
+  sleep 1
+  launchctl bootstrap "gui/$(id -u)" "$dst"
+fi
 launchctl enable "gui/$(id -u)/$label"
 launchctl kickstart -k "gui/$(id -u)/$label"
 
