@@ -36,7 +36,7 @@ cat > "$dst" <<PLIST
     <key>PORT</key>
     <string>8787</string>
     <key>GLM_MODEL</key>
-    <string>glm-5.1</string>
+    <string>glm-5.2</string>
     <key>GLM_SHIM_THINKING</key>
     <string>enabled</string>
     <key>GLM_SHIM_LOG_DIR</key>

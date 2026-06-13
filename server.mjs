@@ -7,7 +7,7 @@ const PORT = Number(process.env.PORT || 8787);
 const UPSTREAM_URL =
   process.env.GLM_UPSTREAM_URL ||
   "https://open.bigmodel.cn/api/coding/paas/v4/chat/completions";
-const DEFAULT_MODEL = process.env.GLM_MODEL || "glm-5.1";
+const DEFAULT_MODEL = process.env.GLM_MODEL || "glm-5.2";
 const LOG_DIR = process.env.GLM_SHIM_LOG_DIR || path.resolve("logs");
 const LOG_BODIES = process.env.GLM_SHIM_LOG_BODIES === "1";
 const THINKING_MODE = process.env.GLM_SHIM_THINKING || "enabled";
@@ -194,10 +194,10 @@ function sanitizeJsonSchema(schema) {
   if (!schema || typeof schema !== "object") return schema;
 
   if (Array.isArray(schema.anyOf) && schema.anyOf.length > 0) {
-    return sanitizeJsonSchema(schema.anyOf[0]);
+    return sanitizeJsonSchema(simplifySchemaUnion(schema.anyOf));
   }
   if (Array.isArray(schema.oneOf) && schema.oneOf.length > 0) {
-    return sanitizeJsonSchema(schema.oneOf[0]);
+    return sanitizeJsonSchema(simplifySchemaUnion(schema.oneOf));
   }
   if (Array.isArray(schema.allOf) && schema.allOf.length > 0) {
     return sanitizeJsonSchema(Object.assign({}, ...schema.allOf));
@@ -213,6 +213,7 @@ function sanitizeJsonSchema(schema) {
       key === "examples" ||
       key === "format" ||
       key === "not" ||
+      key === "pattern" ||
       key === "patternProperties"
     ) {
       continue;
@@ -224,6 +225,22 @@ function sanitizeJsonSchema(schema) {
     out[key] = sanitizeJsonSchema(value);
   }
   return out;
+}
+
+function simplifySchemaUnion(items) {
+  const branches = items.filter((item) => item && typeof item === "object");
+  const nonNull = branches.filter((item) => item.type !== "null");
+  const constValues = nonNull
+    .filter((item) => Object.prototype.hasOwnProperty.call(item, "const"))
+    .map((item) => item.const);
+  if (constValues.length === nonNull.length && constValues.length > 0) {
+    return { enum: constValues };
+  }
+  const enumValues = nonNull.flatMap((item) => (Array.isArray(item.enum) ? item.enum : []));
+  if (enumValues.length > 0 && nonNull.every((item) => Array.isArray(item.enum))) {
+    return { enum: enumValues };
+  }
+  return nonNull[0] || branches[0] || {};
 }
 
 function parseToolArguments(value) {
@@ -490,15 +507,28 @@ export function createServer() {
       res.writeHead(404, JSON_HEADERS);
       res.end(JSON.stringify({ error: "not found" }));
     } catch (error) {
-      res.writeHead(error.statusCode || 500, JSON_HEADERS);
-      res.end(
-        JSON.stringify({
-          type: "error",
-          error: { message: error.message || "Internal error" },
-        }),
-      );
+      sendError(res, error);
     }
   });
+}
+
+function sendError(res, error) {
+  if (res.destroyed || res.writableEnded) return;
+  const payload = {
+    type: "error",
+    error: { message: error.message || "Internal error" },
+  };
+  if (res.headersSent) {
+    try {
+      sse(res, "error", payload);
+    } catch {
+      // The client may have already disconnected.
+    }
+    res.end();
+    return;
+  }
+  res.writeHead(error.statusCode || 500, JSON_HEADERS);
+  res.end(JSON.stringify(payload));
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) {

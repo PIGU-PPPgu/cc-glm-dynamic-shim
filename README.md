@@ -6,7 +6,7 @@ Unofficial compatibility shim. This project is not affiliated with, endorsed
 by, or sponsored by Anthropic, Claude Code, Z.ai, or BigModel.
 
 Local compatibility shim for using GLM Coding Plan models, especially
-`glm-5.1`, behind Claude Code's Anthropic Messages API surface.
+`glm-5.2`, behind Claude Code's Anthropic Messages API surface.
 
 It is useful when a tool expects Anthropic-compatible `/v1/messages` requests,
 but your GLM Coding Plan access is exposed through an OpenAI-compatible
@@ -14,13 +14,15 @@ but your GLM Coding Plan access is exposed through an OpenAI-compatible
 
 ## Status
 
-Smoke-tested with Claude Code dynamic workflows:
+Smoke-tested locally:
 
 - Claude Code v2.1.170
-- Model id: `glm-5.1`
-- `/effort ultracode`: accepted
-- Real `Workflow(...)` tool invocation: accepted
-- Minimal dynamic workflow: 1 agent, completed in 11 seconds, result `OK`
+- Model id: `glm-5.2`
+- Basic request: `OK`
+- Real tool use: Bash tool_use round-trip completed with result `GLM_TOOL_OK`
+- Real Claude Code requests: observed 60 to 153 tools passed through the shim
+- Dynamic workflow: previously verified with `glm-5.1`; full `glm-5.2`
+  workflow stress testing should be run separately
 
 This confirms the runtime path works. Larger real-world workflows still need
 broader testing across repositories, task shapes, and Coding Plan tiers.
@@ -38,7 +40,7 @@ Then forwards them to BigModel's OpenAI-compatible chat completions endpoint:
 
 ```bash
 cd cc-glm-dynamic-shim
-GLM_MODEL=glm-5.1 GLM_SHIM_THINKING=enabled PORT=8787 npm start
+GLM_MODEL=glm-5.2 GLM_SHIM_THINKING=enabled PORT=8787 npm start
 ```
 
 ## Fastest Setup
@@ -104,21 +106,21 @@ For plain Claude Code settings without ccswitch, see
 {
   "ANTHROPIC_BASE_URL": "http://127.0.0.1:8787/anthropic",
   "ANTHROPIC_AUTH_TOKEN": "<your BigModel API key>",
-  "ANTHROPIC_MODEL": "glm-5.1",
-  "ANTHROPIC_DEFAULT_OPUS_MODEL": "glm-5.1",
-  "ANTHROPIC_DEFAULT_OPUS_MODEL_NAME": "glm-5.1",
-  "ANTHROPIC_DEFAULT_SONNET_MODEL": "glm-5.1",
-  "ANTHROPIC_DEFAULT_SONNET_MODEL_NAME": "glm-5.1",
-  "ANTHROPIC_DEFAULT_HAIKU_MODEL": "glm-5.1",
+  "ANTHROPIC_MODEL": "glm-5.2",
+  "ANTHROPIC_DEFAULT_OPUS_MODEL": "glm-5.2[1M]",
+  "ANTHROPIC_DEFAULT_OPUS_MODEL_NAME": "glm-5.2",
+  "ANTHROPIC_DEFAULT_SONNET_MODEL": "glm-5.2[1M]",
+  "ANTHROPIC_DEFAULT_SONNET_MODEL_NAME": "glm-5.2",
+  "ANTHROPIC_DEFAULT_HAIKU_MODEL": "glm-5.2",
+  "CLAUDE_CODE_AUTO_COMPACT_WINDOW": "1000000",
   "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1",
-  "CLAUDE_CODE_SUBAGENT_MODEL": "glm-5.1"
+  "CLAUDE_CODE_SUBAGENT_MODEL": "glm-5.2"
 }
 ```
 
 Do not set `CLAUDE_CODE_EFFORT_LEVEL=max` while testing `/effort ultracode`.
-Also avoid adding `[1M]` to the actual GLM model id. In this local test,
-Claude Code rejected `glm-5.1[1M]` before the request reached the workflow
-runtime, while plain `glm-5.1` worked.
+The shim normalizes model ids such as `glm-5.2[1M]` to plain `glm-5.2` before
+forwarding to BigModel's OpenAI-compatible endpoint.
 
 ## Logs
 
@@ -139,11 +141,12 @@ The shim intentionally does not forward Anthropic-only `reasoning_effort` to
 BigModel's OpenAI-compatible endpoint. This avoids the class of third-party
 errors where `reasoning_effort` conflicts with a disabled thinking option.
 
-## Why not use `glm-5.1[1M]`?
+## Model id and 1M context
 
-Use plain `glm-5.1` as the actual model id. In local testing, Claude Code
-rejected `glm-5.1[1M]` before the workflow runtime completed negotiation, while
-plain `glm-5.1` worked.
+Use `glm-5.2` as the primary model id. You may use `glm-5.2[1M]` for
+Claude Code's Opus / Sonnet aliases; the shim normalizes that to `glm-5.2`
+when forwarding upstream. Set `CLAUDE_CODE_AUTO_COMPACT_WINDOW=1000000` when
+using the 1M aliases.
 
 ## Development
 
